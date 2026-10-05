@@ -9,7 +9,7 @@ It does not approve claims, calculate remaining allowance, or issue payments.
 
 ## Components
 
-- Java 17, Spring Boot 3.5.14, Maven Wrapper, and Apache PDFBox 3.0.8.
+- Java 17, Spring Boot 3.5.7, Maven Wrapper, and Apache PDFBox 3.0.8.
 - Spring public API: `http://localhost:8080`.
 - Python internal API: `http://127.0.0.1:8000`.
 - Ollama: `http://localhost:11434`, using `llama3.2:3b` and `nomic-embed-text`.

@@ -14,4 +14,4 @@ python:
   connect-timeout-ms: ${PYTHON_CONNECT_TIMEOUT_MS:2000}
   read-timeout-ms: ${PYTHON_READ_TIMEOUT_MS:70000}
 policy:
-  file: ${POLICY_FILE:../../marlabs_policydata.pdf}
+  file: ${POLICY_FILE:../../Python/marlabs_policydata.pdf}

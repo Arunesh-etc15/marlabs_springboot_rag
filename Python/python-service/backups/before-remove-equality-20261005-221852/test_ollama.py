@@ -15,7 +15,7 @@ def expected():
 @pytest.mark.parametrize("failure,code", [
     ("timeout", "PROVIDER_TIMEOUT"), ("unavailable", "PROVIDER_UNAVAILABLE"),
     ("json", "INVALID_PROVIDER_RESPONSE"), ("schema", "INVALID_PROVIDER_RESPONSE"),
-    ("missing", "MODEL_UNAVAILABLE"),
+    ("invented", "INVALID_PROVIDER_RESPONSE"), ("missing", "MODEL_UNAVAILABLE"),
 ])
 def test_failure_without_retry(failure, code):
     calls = []
@@ -31,25 +31,13 @@ def test_failure_without_retry(failure, code):
             return httpx.Response(200, json={"done": True, "message": {"content": "{}"}})
         if failure == "missing":
             return httpx.Response(404, json={"error": "model not found"})
-        raise AssertionError("Unexpected failure scenario")
+        wrong = expected().model_copy(update={"answer": "Claim approved for INR 999999."})
+        return httpx.Response(200, json={"done": True, "message": {"content": wrong.model_dump_json()}})
     provider = OllamaProvider(Settings(), transport=httpx.MockTransport(respond))
     with pytest.raises(ServiceError) as exc:
         provider.generate("question", [], expected())
     assert exc.value.code == code and len(calls) == 1
     provider.close()
-
-
-def test_schema_valid_answer_need_not_equal_expected():
-    generated = expected().model_copy(update={"answer": "The approved policy applies."})
-    def respond(request):
-        return httpx.Response(200, json={
-            "done": True, "message": {"content": generated.model_dump_json()},
-        })
-    provider = OllamaProvider(Settings(), transport=httpx.MockTransport(respond))
-    try:
-        assert provider.generate("question", [], expected()) == generated
-    finally:
-        provider.close()
 
 
 def test_ollama_payload_uses_configured_model_and_schema():

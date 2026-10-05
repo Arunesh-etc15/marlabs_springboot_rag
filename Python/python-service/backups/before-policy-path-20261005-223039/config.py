@@ -8,10 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 # Support both the original sibling folders and your separate Python/SpringBoot folders.
 if (ROOT.parent / "spring-api").is_dir():
     DEFAULT_DATA_ROOT = ROOT.parent
-    DEFAULT_POLICY_ROOT = ROOT.parent
 else:
     DEFAULT_DATA_ROOT = ROOT.parent.parent / "SpringBoot"
-    DEFAULT_POLICY_ROOT = ROOT.parent.parent
 
 
 @dataclass(frozen=True)
@@ -21,7 +19,7 @@ class Settings:
     embedding_model: str = "nomic-embed-text"
     timeout_seconds: float = 20.0
     chroma_path: Path = ROOT / ".chroma"
-    policy_file: Path = DEFAULT_POLICY_ROOT / "marlabs_policydata.pdf"
+    policy_file: Path = ROOT.parent / "marlabs_policydata.pdf"
     callers_file: Path = DEFAULT_DATA_ROOT / "spring-api/src/main/resources/callers.json"
 
     @classmethod

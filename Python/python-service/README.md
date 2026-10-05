@@ -117,3 +117,18 @@ Vocabulary and conflict interpretation are deliberately conservative. Unrecogniz
 The tests use real Chroma with test-only provider mocks and controlled HTTPX Ollama doubles. Real llama3.2:3b/nomic-embed-text inference has also been checked locally. Removing the runnable offline demonstration is a departure from the original assessment's offline-double requirement. This implementation was created with AI assistance.
 
 References: [Chroma metadata filtering](https://docs.trychroma.com/docs/querying-collections/metadata-filtering), [Ollama embeddings](https://docs.ollama.com/api/embed), and [Ollama structured outputs](https://docs.ollama.com/capabilities/structured-outputs).
+
+
+# Git code commit steps
+# Step 1: Make sure repo is initialized
+git init
+
+# Step 2: Stage and commit files
+git add .
+git commit -m "Initial commit"
+
+# Step 3: Ensure branch is named main
+git branch -M main
+
+# Step 4: Push to remote
+git push -u origin main

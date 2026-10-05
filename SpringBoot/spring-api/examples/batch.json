@@ -1,0 +1,7 @@
+{
+  "batch_id": "readme-demo-01",
+  "as_of": "2026-09-21",
+  "documents": [
+    {"document_id": "request-01", "filename": "request-01.txt"}
+  ]
+}
