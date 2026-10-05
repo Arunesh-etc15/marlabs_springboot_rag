@@ -1,0 +1,319 @@
+{
+  "batch_id": "demo-01",
+  "summary": {
+    "total": 8,
+    "completed": 7,
+    "failed": 1
+  },
+  "results": [
+    {
+      "document_id": "request-01",
+      "processing_status": "COMPLETED",
+      "extracted": {
+        "benefit": "certification",
+        "amount": 18000.0,
+        "currency": "INR",
+        "reference": "CERT-101"
+      },
+      "field_evidence": {
+        "benefit": [
+          "certification reimbursement"
+        ],
+        "amount": [
+          "INR 18000"
+        ],
+        "currency": [
+          "INR"
+        ],
+        "reference": [
+          "Reference: CERT-101"
+        ]
+      },
+      "policy": {
+        "status": "ANSWERED",
+        "answer": "The annual certification reimbursement limit for employees is INR 25000.",
+        "citations": [
+          {
+            "chunk_id": "atlas-cert-current",
+            "quote": "The annual certification reimbursement limit for employees is INR 25000."
+          }
+        ]
+      },
+      "review_required": true,
+      "issues": [
+        "Policy terms do not establish expense eligibility or a payable amount.",
+        "Claims history is unavailable; an annual limit does not establish remaining balance.",
+        "Human review is required; no claim has been approved.",
+        "Human review is required; this report does not approve payment."
+      ],
+      "duplicate_of": null,
+      "error": null
+    },
+    {
+      "document_id": "request-02",
+      "processing_status": "COMPLETED",
+      "extracted": {
+        "benefit": "home-office",
+        "amount": 14000.0,
+        "currency": "INR",
+        "reference": "HOME-202"
+      },
+      "field_evidence": {
+        "benefit": [
+          "home-office allowance"
+        ],
+        "amount": [
+          "INR 14000"
+        ],
+        "currency": [
+          "INR"
+        ],
+        "reference": [
+          "Reference: HOME-202"
+        ]
+      },
+      "policy": {
+        "status": "CONFLICT",
+        "answer": null,
+        "citations": [
+          {
+            "chunk_id": "atlas-home-office-a",
+            "quote": "The annual home-office allowance for employees is INR 12000."
+          },
+          {
+            "chunk_id": "atlas-home-office-b",
+            "quote": "The annual home-office allowance for employees is INR 15000."
+          }
+        ]
+      },
+      "review_required": true,
+      "issues": [
+        "Applicable policies conflict; a human must resolve the disagreement.",
+        "Policy terms do not establish expense eligibility or a payable amount.",
+        "Claims history is unavailable; an annual limit does not establish remaining balance.",
+        "Human review is required; no claim has been approved.",
+        "Human review is required; this report does not approve payment."
+      ],
+      "duplicate_of": null,
+      "error": null
+    },
+    {
+      "document_id": "request-03",
+      "processing_status": "COMPLETED",
+      "extracted": {
+        "benefit": "certification",
+        "amount": null,
+        "currency": "INR",
+        "reference": "CERT-303"
+      },
+      "field_evidence": {
+        "benefit": [
+          "Certification reimbursement"
+        ],
+        "currency": [
+          "INR"
+        ],
+        "reference": [
+          "Reference: CERT-303"
+        ]
+      },
+      "policy": {
+        "status": "ANSWERED",
+        "answer": "The annual certification reimbursement limit for employees is INR 25000.",
+        "citations": [
+          {
+            "chunk_id": "atlas-cert-current",
+            "quote": "The annual certification reimbursement limit for employees is INR 25000."
+          }
+        ]
+      },
+      "review_required": true,
+      "issues": [
+        "Conflicting stated amounts: 22000, 28000.",
+        "Policy terms do not establish expense eligibility or a payable amount.",
+        "Claims history is unavailable; an annual limit does not establish remaining balance.",
+        "Human review is required; no claim has been approved.",
+        "Human review is required; this report does not approve payment."
+      ],
+      "duplicate_of": null,
+      "error": null
+    },
+    {
+      "document_id": "request-04",
+      "processing_status": "COMPLETED",
+      "extracted": {
+        "benefit": "wellness",
+        "amount": 6000.0,
+        "currency": "INR",
+        "reference": "WELL-404"
+      },
+      "field_evidence": {
+        "benefit": [
+          "gym membership"
+        ],
+        "amount": [
+          "INR 6000"
+        ],
+        "currency": [
+          "INR"
+        ],
+        "reference": [
+          "Reference: WELL-404"
+        ]
+      },
+      "policy": {
+        "status": "INSUFFICIENT_EVIDENCE",
+        "answer": null,
+        "citations": []
+      },
+      "review_required": true,
+      "issues": [
+        "There is insufficient approved policy evidence for this benefit.",
+        "Human review is required; no claim has been approved.",
+        "Human review is required; this report does not approve payment."
+      ],
+      "duplicate_of": null,
+      "error": null
+    },
+    {
+      "document_id": "request-05",
+      "processing_status": "COMPLETED",
+      "extracted": {
+        "benefit": "certification",
+        "amount": 70000.0,
+        "currency": "INR",
+        "reference": "CERT-505"
+      },
+      "field_evidence": {
+        "benefit": [
+          "Certification reimbursement"
+        ],
+        "amount": [
+          "INR 70000"
+        ],
+        "currency": [
+          "INR"
+        ],
+        "reference": [
+          "Reference: CERT-505"
+        ]
+      },
+      "policy": {
+        "status": "ANSWERED",
+        "answer": "The annual certification reimbursement limit for employees is INR 25000.",
+        "citations": [
+          {
+            "chunk_id": "atlas-cert-current",
+            "quote": "The annual certification reimbursement limit for employees is INR 25000."
+          }
+        ]
+      },
+      "review_required": true,
+      "issues": [
+        "Policy terms do not establish expense eligibility or a payable amount.",
+        "Claims history is unavailable; an annual limit does not establish remaining balance.",
+        "Human review is required; no claim has been approved.",
+        "Human review is required; this report does not approve payment."
+      ],
+      "duplicate_of": null,
+      "error": null
+    },
+    {
+      "document_id": "request-06",
+      "processing_status": "COMPLETED",
+      "extracted": {
+        "benefit": "certification",
+        "amount": 18000.0,
+        "currency": "INR",
+        "reference": "CERT-101"
+      },
+      "field_evidence": {
+        "benefit": [
+          "certification reimbursement"
+        ],
+        "amount": [
+          "INR 18000"
+        ],
+        "currency": [
+          "INR"
+        ],
+        "reference": [
+          "Reference: CERT-101"
+        ]
+      },
+      "policy": {
+        "status": "ANSWERED",
+        "answer": "The annual certification reimbursement limit for employees is INR 25000.",
+        "citations": [
+          {
+            "chunk_id": "atlas-cert-current",
+            "quote": "The annual certification reimbursement limit for employees is INR 25000."
+          }
+        ]
+      },
+      "review_required": true,
+      "issues": [
+        "Policy terms do not establish expense eligibility or a payable amount.",
+        "Claims history is unavailable; an annual limit does not establish remaining balance.",
+        "Human review is required; no claim has been approved.",
+        "Human review is required; this report does not approve payment."
+      ],
+      "duplicate_of": "request-01",
+      "error": null
+    },
+    {
+      "document_id": "request-07",
+      "processing_status": "COMPLETED",
+      "extracted": {
+        "benefit": "training",
+        "amount": null,
+        "currency": null,
+        "reference": "TRAIN-707"
+      },
+      "field_evidence": {
+        "benefit": [
+          "external training"
+        ],
+        "reference": [
+          "Reference: TRAIN-707"
+        ]
+      },
+      "policy": {
+        "status": "ANSWERED",
+        "answer": "Manager approval is required before external training is booked.",
+        "citations": [
+          {
+            "chunk_id": "atlas-training-current",
+            "quote": "Manager approval is required before external training is booked."
+          }
+        ]
+      },
+      "review_required": true,
+      "issues": [
+        "Requested amount is missing.",
+        "Currency is missing or ambiguous.",
+        "Policy terms do not establish expense eligibility or a payable amount.",
+        "Human review is required; no claim has been approved.",
+        "Human review is required; this report does not approve payment."
+      ],
+      "duplicate_of": null,
+      "error": null
+    },
+    {
+      "document_id": "request-08",
+      "processing_status": "FAILED",
+      "extracted": null,
+      "field_evidence": {},
+      "policy": null,
+      "review_required": true,
+      "issues": [
+        "Processing failed; human review is required."
+      ],
+      "duplicate_of": null,
+      "error": {
+        "code": "EMPTY_FILE",
+        "message": "The uploaded file is empty."
+      }
+    }
+  ]
+}

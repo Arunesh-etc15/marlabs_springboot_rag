@@ -1,0 +1,5 @@
+{
+  "atlas-employee-01": {"tenant": "Atlas", "role": "employee"},
+  "atlas-contractor-01": {"tenant": "Atlas", "role": "contractor"},
+  "boreal-employee-01": {"tenant": "Boreal", "role": "employee"}
+}

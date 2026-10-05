@@ -1,0 +1,15 @@
+server:
+  port: ${PORT:8080}
+spring:
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    deserialization:
+      fail-on-unknown-properties: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 25MB
+python:
+  base-url: ${PYTHON_BASE_URL:http://localhost:8000}
+  connect-timeout-ms: ${PYTHON_CONNECT_TIMEOUT_MS:2000}
+  read-timeout-ms: ${PYTHON_READ_TIMEOUT_MS:70000}

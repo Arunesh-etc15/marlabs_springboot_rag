@@ -1,0 +1,10 @@
+{
+  "batch_id": "demo-04",
+  "as_of": "2026-09-21",
+  "documents": [
+    {
+      "document_id": "request-04",
+      "filename": "request-04.txt"
+    }
+  ]
+}

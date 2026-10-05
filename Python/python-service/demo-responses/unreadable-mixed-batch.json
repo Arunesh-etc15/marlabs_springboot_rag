@@ -1,0 +1,69 @@
+{
+  "batch_id": "failure-isolation",
+  "summary": {
+    "total": 2,
+    "completed": 1,
+    "failed": 1
+  },
+  "results": [
+    {
+      "document_id": "bad",
+      "processing_status": "FAILED",
+      "extracted": null,
+      "field_evidence": {},
+      "policy": null,
+      "review_required": true,
+      "issues": [
+        "Processing failed; human review is required."
+      ],
+      "duplicate_of": null,
+      "error": {
+        "code": "UNREADABLE_FILE",
+        "message": "The uploaded file does not contain readable supported text."
+      }
+    },
+    {
+      "document_id": "good",
+      "processing_status": "COMPLETED",
+      "extracted": {
+        "benefit": "certification",
+        "amount": 18000.0,
+        "currency": "INR",
+        "reference": "CERT-101"
+      },
+      "field_evidence": {
+        "benefit": [
+          "certification reimbursement"
+        ],
+        "amount": [
+          "INR 18000"
+        ],
+        "currency": [
+          "INR"
+        ],
+        "reference": [
+          "Reference: CERT-101"
+        ]
+      },
+      "policy": {
+        "status": "ANSWERED",
+        "answer": "The annual certification reimbursement limit for employees is INR 25000.",
+        "citations": [
+          {
+            "chunk_id": "atlas-cert-current",
+            "quote": "The annual certification reimbursement limit for employees is INR 25000."
+          }
+        ]
+      },
+      "review_required": true,
+      "issues": [
+        "Policy terms do not establish expense eligibility or a payable amount.",
+        "Claims history is unavailable; an annual limit does not establish remaining balance.",
+        "Human review is required; no claim has been approved.",
+        "Human review is required; this report does not approve payment."
+      ],
+      "duplicate_of": null,
+      "error": null
+    }
+  ]
+}
