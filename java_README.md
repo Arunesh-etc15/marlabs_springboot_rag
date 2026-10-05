@@ -177,6 +177,24 @@ curl.exe -X POST "http://localhost:8080/batches" `
   -F "files=@examples/request-01.txt"
 ```
 
+
+1. URL: POST http://localhost:8080/batches
+2. Header: X-Caller-Id: atlas-employee-01
+3. Body → form-data:
+   - metadata → File → choose examples/batch.json; set its row content type to application/json.
+   - files → File → choose examples/request-01.txt.
+4. Remove any manually added overall Content-Type header. Postman must generate it.
+The metadata must match the uploaded filename exactly:
+{
+  "batch_id": "demo-01",
+  "as_of": "2026-09-21",
+  "documents": [
+    {
+      "document_id": "request-01",
+      "filename": "request-01.txt"
+    }
+  ]
+}
 ### Postman Upload
 
 1. Select **POST** `http://localhost:8080/batches`.
