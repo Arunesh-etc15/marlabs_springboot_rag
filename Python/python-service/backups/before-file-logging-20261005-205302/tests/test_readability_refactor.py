@@ -97,7 +97,7 @@ def test_startup_always_uses_ollama_and_closes_it(monkeypatch, provider, records
     monkeypatch.setattr(main, "PolicyStore", Mock(return_value=Mock()))
     settings = Settings.from_env()
     with TestClient(main.create_app(settings=settings)) as client:
-        assert client.get("/openapi.json").json()["info"]["title"] == "Employee policy service"
+        assert client.get("/health").json()["mode"] == "ollama"
         factory.assert_called_once_with(settings)
         assert client.app.state.service.provider is provider
     provider.close.assert_called_once()

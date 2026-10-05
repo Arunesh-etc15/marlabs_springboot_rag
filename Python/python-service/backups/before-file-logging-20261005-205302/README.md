@@ -36,6 +36,12 @@ $env:OLLAMA_EMBED_MODEL = "nomic-embed-text"
 
 In a second terminal start Spring Boot:
 
+```powershell
+cd D:\Marlabs_Project\SpringBoot\spring-api
+$env:POLICY_FILE = "D:\Marlabs_Project\Python\marlabs_policydata.pdf"
+.\mvnw.cmd spring-boot:run
+```
+
 Use the existing Postman requests against http://localhost:8080. Python's internal endpoints are on port 8000; /docs shows their contracts. /health is a liveness check, not proof that Ollama models are available.
 
 ## Provider
@@ -45,18 +51,7 @@ have been removed. Old MODEL_MODE environment variables are ignored. Unit tests
 use test-only mocks; these are not available as a running-service mode or fallback.
 Ollama must be running with both configured models installed for supported answers.
 
-## Logging
-
-At startup the application writes `service.log` directly in the python-service
-root folder, independent of the terminal's working directory. It rotates at
-5 MB and keeps three backups: service.log.1, service.log.2, and service.log.3.
-The file includes startup/shutdown, model names, policy loading, HTTP status and
-duration, document processing IDs, safe service error codes, and unexpected-error
-tracebacks. It does not deliberately log questions, document contents, or HTTP
-request/response bodies. Existing Uvicorn console output is preserved.
-Logs and their backups are ignored by Git. Restart Python to enable file logging.
-
-## Configuration Values
+## Configuration
 
 - OLLAMA_MODEL: llama3.2:3b; answer generation.
 - OLLAMA_EMBED_MODEL: nomic-embed-text; policy and query vectors.

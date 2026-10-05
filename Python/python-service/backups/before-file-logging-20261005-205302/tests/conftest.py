@@ -3,7 +3,6 @@ from chromadb.config import Settings
 import pytest
 from app.config import Settings as ServiceSettings
 from unittest.mock import Mock
-from uuid import uuid4
 from app.providers import OllamaProvider
 from app.service import PolicyService
 from app.store import PolicyStore, load_policies
@@ -18,7 +17,7 @@ def records():
 def provider():
     # Unit tests mock the provider; the application itself always uses Ollama.
     mock = Mock(spec=OllamaProvider)
-    mock.identity = "test-ollama-" + uuid4().hex
+    mock.identity = "test-ollama"
     mock.calls = []
     mock.embed.side_effect = lambda texts: [[1.0, 0.0] for text in texts]
 

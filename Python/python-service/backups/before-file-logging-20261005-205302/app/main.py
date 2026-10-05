@@ -4,7 +4,6 @@ from contextlib import asynccontextmanager
 from datetime import date
 import json
 import logging
-from time import perf_counter
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.responses import JSONResponse
 from .config import Settings
@@ -13,7 +12,6 @@ from .models import Analysis, Answer, Context, Question
 from .providers import OllamaProvider
 from .service import PolicyService
 from .store import PolicyStore, load_policies
-from .logging_config import configure_logging
 
 log = logging.getLogger("policy_service")
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
@@ -29,50 +27,27 @@ def create_app(settings=None, service=None):
 
     @asynccontextmanager
     async def lifespan(app):
-        log_path = configure_logging()
-        log.info("Service starting; log_file=%s", log_path)
         provider = None
-        try:
-            if service is None:
-                provider = OllamaProvider(settings)
+        if service is None:
+            provider = OllamaProvider(settings)
 
-                # Read the policy PDF now; embeddings are built on the first search.
-                policies = load_policies(settings.policy_file)
-                log.info("Loaded %s policy records from %s", len(policies), settings.policy_file)
-                store = PolicyStore(policies, provider, path=settings.chroma_path)
-                app.state.service = PolicyService(store, provider)
-            else:
-                app.state.service = service
-            log.info("Service ready; model=%s embedding_model=%s", settings.model, settings.embedding_model)
+            # Read the policy PDF now; embeddings are built on the first search.
+            policies = load_policies(settings.policy_file)
+            log.info("Loaded %s policy records from %s", len(policies), settings.policy_file)
+            store = PolicyStore(policies, provider, path=settings.chroma_path)
+            app.state.service = PolicyService(store, provider)
+        else:
+            app.state.service = service
+        try:
             yield
-        except Exception:
-            log.exception("Service lifecycle failed")
-            raise
         finally:
             if provider:
                 provider.close()
-            log.info("Service stopped")
 
     app = FastAPI(title="Employee policy service", lifespan=lifespan)
 
-    @app.middleware("http")
-    async def log_request(request, call_next):
-        started = perf_counter()
-        try:
-            response = await call_next(request)
-        except Exception:
-            route = getattr(request.scope.get("route"), "path", "unmatched")
-            log.exception("Request failed; method=%s route=%s", request.method, route)
-            raise
-        route = getattr(request.scope.get("route"), "path", "unmatched")
-        elapsed_ms = (perf_counter() - started) * 1000
-        log.info("Request completed; method=%s route=%s status=%s duration_ms=%.1f",
-                 request.method, route, response.status_code, elapsed_ms)
-        return response
-
     @app.exception_handler(ServiceError)
     async def failure(request, error):
-        log.warning("Service error; code=%s status=%s", error.code, error.status)
         return JSONResponse(
             status_code=error.status,
             content={"code": error.code, "message": error.message},
