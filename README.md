@@ -120,15 +120,15 @@ References: [Chroma metadata filtering](https://docs.trychroma.com/docs/querying
 
 
 # Git code commit steps
-# Step 1: Make sure repo is initialized
+Step 1: Make sure repo is initialized
 git init
 
-# Step 2: Stage and commit files
+Step 2: Stage and commit files
 git add .
 git commit -m "Initial commit"
 
-# Step 3: Ensure branch is named main
+Step 3: Ensure branch is named main
 git branch -M main
 
-# Step 4: Push to remote
+Step 4: Push to remote
 git push -u origin main
