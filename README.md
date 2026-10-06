@@ -1,4 +1,4 @@
-# Python policy service with FastAPI RAG, vector (ChromaDB) and Ollama
+# Python policy service with RAG architecture using FastAPI , vector (ChromaDB) and Ollama
 
 This service implements policy retrieval, supported answers, and TXT/PDF extraction for the Spring Boot API. Its policy source is `"path"/marlabs_policydata.pdf`, not a policy JSON file. Python reads the PDF for embeddings and evidence; Spring reads that same PDF independently for citation validation. Set POLICY_FILE and CALLERS_FILE explicitly for other layouts.
 
