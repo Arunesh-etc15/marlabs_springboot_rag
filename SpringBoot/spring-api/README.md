@@ -323,8 +323,7 @@ synchronous, with no persistent job queue, approval-system integration, malware
 scanning, or production access controls. Topic/injection rules are conservative,
 and strict model-output matching is sensitive to question wording. Human review
 is always required. Production deployment needs a separate security and capacity
-review. The runnable offline demonstration was removed at the developer's request.
+review.
 
-AI assisted with requirements interpretation, implementation, tests, integration,
-troubleshooting, and documentation. The developer performed local setup and
-manual API testing. Development time was not recorded accurately.
+AI assisted with requirements interpretation, integration and documentation. 
+Development time was not recorded accurately.
