@@ -1,6 +1,6 @@
 # Python policy service with Chroma and Ollama
 
-This service implements policy retrieval, supported answers, and TXT/PDF extraction for the Spring Boot API. Its policy source is `D:/Marlabs_Project/Python/marlabs_policydata.pdf`, not a policy JSON file. Python reads the PDF for embeddings and evidence; Spring reads that same PDF independently for citation validation. Set POLICY_FILE and CALLERS_FILE explicitly for other layouts.
+This service implements policy retrieval, supported answers, and TXT/PDF extraction for the Spring Boot API. Its policy source is `"path"/marlabs_policydata.pdf`, not a policy JSON file. Python reads the PDF for embeddings and evidence; Spring reads that same PDF independently for citation validation. Set POLICY_FILE and CALLERS_FILE explicitly for other layouts.
 
 Virtual environments cannot be moved with the source. Create a fresh .venv at the new location. Prefer .\.venv\Scripts\python.exe -m uvicorn to ensure the active interpreter matches the project.
 
@@ -37,8 +37,6 @@ In a second terminal start Spring Boot:
 
 Use the existing Postman requests against http://localhost:8080. Python's internal endpoints are on port 8000; /docs shows their contracts. /health is a liveness check, not proof that Ollama models are available.
 
-
-
 ## Configuration Values
 
 - OLLAMA_MODEL: llama3.2:3b; answer generation.
@@ -51,11 +49,11 @@ Use the existing Postman requests against http://localhost:8080. Python's intern
 
 Both services load this same policy file at startup. Restart both services after changing records so retrieval and citation validation use the same corpus.
 
-The policy PDF must contain numbered records: `1. policy-id`, then `tenant | role | Approved/Draft | YYYY-MM-DD to YYYY-MM-DD`, then policy text. The readers preserve metadata and normalize line/page wrapping to spaces. Malformed records fail startup rather than silently losing access rules. No OCR is provided for the policy source, and policy JSON files are rejected. The PDF-source collection uses a separate fingerprint namespace; older JSON-source collections are left untouched and are not queried.
+The policy PDF must contain numbered records: `1. policy-id`, then `tenant | role | Approved/Draft | YYYY-MM-DD to YYYY-MM-DD`, then policy text. The readers preserve metadata and normalize line/page wrapping to spaces. Malformed records fail startup rather than silently losing access rules. No OCR is provided for the policy source, and policy JSON files are rejected. The PDF-source collection uses a separate fingerprint namespace.
 
-No separate Chroma server is required: PersistentClient stores the index locally. Indexing is lazy on the first supported question. A content fingerprint selects a new collection after policy data or embedding model changes, preventing stale policies from surviving edits. Old collections remain on disk and can be removed later. Reordering/identical duplicate records do not affect outcomes.
+No separate Chroma server is required: PersistentClient stores the index locally. Indexing is lazy on the first supported question. A content fingerprint selects a new collection after policy data or embedding model changes, preventing stale policies from surviving edits.
 
-Spring's default Python read timeout is now 70 seconds, allowing initial indexing, query embedding, and generation. Increasing the Ollama timeout requires increasing PYTHON_READ_TIMEOUT_MS too. Larger models or a cold CPU-only model can exceed the bound and return PROVIDER_TIMEOUT. Each question/item makes at most one chat-generation call; no automatic retries or fallback calls are configured.
+Spring's default Python read timeout is now 70 seconds, allowing initial indexing, query embedding, and generation. Increasing the Ollama timeout requires increasing PYTHON_READ_TIMEOUT_MS too. Larger models or a cold CPU-only model can exceed the bound and return PROVIDER_TIMEOUT. No automatic retries or fallback calls are configured.
 
 ## Start Here
 
