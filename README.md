@@ -28,7 +28,6 @@ Keep Ollama running at http://localhost:11434. If the desktop application is not
 Start Python:
 
 ```powershell
-$env:POLICY_FILE = "D:\Marlabs_Project\Python\marlabs_policydata.pdf"
 $env:OLLAMA_MODEL = "llama3.2:3b"
 $env:OLLAMA_EMBED_MODEL = "nomic-embed-text"
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
@@ -38,23 +37,7 @@ In a second terminal start Spring Boot:
 
 Use the existing Postman requests against http://localhost:8080. Python's internal endpoints are on port 8000; /docs shows their contracts. /health is a liveness check, not proof that Ollama models are available.
 
-## Provider
 
-The application always uses Ollama. OfflineProvider and the MODEL_MODE setting
-have been removed. Old MODEL_MODE environment variables are ignored. Unit tests
-use test-only mocks; these are not available as a running-service mode or fallback.
-Ollama must be running with both configured models installed for supported answers.
-
-## Logging
-
-At startup the application writes `service.log` directly in the python-service
-root folder, independent of the terminal's working directory. It rotates at
-5 MB and keeps three backups: service.log.1, service.log.2, and service.log.3.
-The file includes startup/shutdown, model names, policy loading, HTTP status and
-duration, document processing IDs, safe service error codes, and unexpected-error
-tracebacks. It does not deliberately log questions, document contents, or HTTP
-request/response bodies. Existing Uvicorn console output is preserved.
-Logs and their backups are ignored by Git. Restart Python to enable file logging.
 
 ## Configuration Values
 
@@ -74,49 +57,90 @@ No separate Chroma server is required: PersistentClient stores the index locally
 
 Spring's default Python read timeout is now 70 seconds, allowing initial indexing, query embedding, and generation. Increasing the Ollama timeout requires increasing PYTHON_READ_TIMEOUT_MS too. Larger models or a cold CPU-only model can exceed the bound and return PROVIDER_TIMEOUT. Each question/item makes at most one chat-generation call; no automatic retries or fallback calls are configured.
 
-## Evidence and extraction
+## Start Here
 
-Policy records retain their IDs, tenant/role, approval state, dates, and text. Chroma metadata filters enforce tenant, role, Approved state, and inclusive-start/exclusive-end dates before retrieval results reach generation. Prompt-injection/example passages are excluded as evidence. Python rechecks retrieved metadata and only passes relevant approved quotations to Ollama.
+Functions in order:
 
-All eligible matching passages are considered, so similarity ranking cannot discard the second conflicting allowance. Outcome decisions are deterministic; Ollama produces a schema-constrained extractive response that must exactly match authorized quotes and the required outcome. Unsupported or altered output is a technical failure, not insufficient evidence.
+1. `main.py`: `create_app()` and the `/internal/answer` route.
+2. `service.py`: `PolicyService.answer()`.
+3. `store.py`: `PolicyStore.retrieve()`.
+4. `providers.py`: `embed()` and `generate()`.
 
-The application handles certification, home-office, training, travel, and wellness vocabulary. Policy values and IDs are read from the PDF, never selected by hardcoded record IDs. Date and role changes apply through metadata. Differing monetary terms or manager-approval assertions produce CONFLICT; differing unparsed terms are conservatively treated as unresolved.
+These are functions and methods, not separate applications. FastAPI calls the
+route function; that function calls the service; the service calls the store and
+provider.
 
-Reimbursement documents are never inserted into the policy vector store. UTF-8 TXT and text-based PDFs are read locally, with a 5 MB, 20-page PDF, and 100,000-character text bound. No OCR is performed. Extraction finds benefit, currency-prefixed amounts, references, and exact source quotations. Conflicting amounts/references and multiple benefits remain null. Manager approval and claims-history limitations are shown in issues; neither service approves claims.
+## A Question From Start to Finish
 
-## Internal endpoints
+Suppose Spring sends a question about certification reimbursement with an Atlas
+employee context and an `as_of` date.
 
-POST /internal/answer: JSON {tenant, role, as_of, question}. Return {status, answer, citations}.
+1. `main.py` receives the JSON and checks that tenant and role are known.
+2. `topics.py` recognizes the certification topic.
+3. `store.py` searches only approved policies matching the tenant, role, and date.
+4. `service.py` prepares citations and checks for conflicting policy terms.
+5. `providers.py` sends the question and evidence to Ollama.
+6. Pydantic validates the response structure. Spring separately checks citations.
 
-POST /internal/documents/analyze: multipart text fields tenant, role, as_of, batch_id, document_id and a file part named file. Return {extracted, field_evidence, policy, issues} as documented in Spring's README. Known tenant/role pairs must come from Spring caller lookup. Run this internal service on loopback; it does not implement production authentication.
+An unknown topic, no matching policy, or unsupported scope can return
+`INSUFFICIENT_EVIDENCE` before Ollama is called.
 
-Python technical failures use safe {code, message} responses: PROVIDER_TIMEOUT (504), PROVIDER_UNAVAILABLE or MODEL_UNAVAILABLE (503), INVALID_PROVIDER_RESPONSE or RETRIEVAL_ERROR or PROVIDER_ERROR (502), and EMPTY_FILE/UNREADABLE_FILE/UNSUPPORTED_FILE (422). Spring maps downstream failures and isolates individual batch failures.
+## Startup Versus Requests
 
-## Tests and reproducible demonstration
+Startup reads settings, caller identities, and the policy PDF, then opens Chroma.
+The first policy search creates embeddings if that collection needs indexing.
+Later searches reuse the collection and embed each new question.
+
+The PDF is the source of policy records. JSON serialization inside `store.py`
+only helps calculate the collection name; it does not create a policy JSON file.
+
+## Uploaded Documents
+
+Spring manages the batch and sends Python one document at a time.
+`extraction.py` reads its TXT or text-based PDF content and extracts benefit,
+amount, currency, and reference using rules. `service.py` then searches policies
+for the recognized benefit and adds human-review warnings. This does not approve
+a claim or payment.
+
+## Python Concepts Used Here
+
+- `class`: groups related data and functions. `PolicyStore` groups Chroma work.
+- `self`: the current object. `self.provider` is that object's Ollama connection.
+- `__init__`: runs when an object is created and saves its dependencies.
+- `dict`: named values, such as `{"tenant": "Atlas"}`.
+- `list`: ordered values, such as a list of citations.
+- `set`: distinct values, useful for detecting different amounts.
+- `return`: sends a result back to the caller.
+- `raise`: stops the operation with an error.
+- `try/except`: handles failures such as a disconnected Ollama service.
+- `with`: manages a resource, such as a file or lock, and releases it afterward.
+- `@app.post`: tells FastAPI which function handles a POST endpoint.
+- `BaseModel`: Pydantic's way to define JSON fields and validate their types.
+- `yield` in the lifespan function: separates startup from shutdown cleanup.
+
+## Remaining Files
+
+`config.py` reads environment settings and file paths. `policy_source.py` parses
+numbered records from the policy PDF. `models.py` defines data structures.
+`errors.py` defines service errors. `logging_config.py` configures `service.log`.
+`__init__.py` marks `app` as a Python package.
+
+## Important Limitations
+
+Schema validation does not prove an answer is correct. The exact comparison
+between the model response and the expected answer has been removed. Citation
+checks remain, but do not prove every statement in the answer text.
+Scanned PDFs need OCR, which this implementation does not provide.
+
+## Run Tests
+
+From the `python-service` folder with its virtual environment activated:
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest -q
+python -m pytest tests -q
 ```
 
-From the Spring directory run .\mvnw.cmd package, then from the Python directory:
-
-```powershell
-.\.venv\Scripts\python.exe scripts/demo.py
-```
-
-The script requires running Ollama with the configured models. It starts both services on temporary free ports, sends public /answer and the supplied eight-document batch, checks seven completed results and one empty-file failure, and exercises an unreadable PDF alongside a valid item. It saves representative public JSON in demo-responses and stops its temporary services. Model failures remain visible as errors; there is no fallback provider. Sample documents and metadata are in tests/fixtures/pdf-batch.
-
-Tests use real Chroma without model downloads and HTTPX Ollama protocol doubles. They cover access/date boundaries, conflicting/missing policies, source quotations, PDF/TXT extraction, ambiguous fields, record mutation/reordering/duplicates, prompt injection, and provider failures/no retries. The public demonstration verifies exact file duplicates, order, all eight documents, and failure isolation.
-
-## Design limits and verification scope
-
-The consequential choice is deterministic evidence selection and conflict detection with extractive Ollama output, instead of letting an LLM decide access, invent policy precedence, or freely paraphrase amounts. This narrows answer generation but makes quotations and failures auditable.
-
-Vocabulary and conflict interpretation are deliberately conservative. Unrecognized benefits, unusual document formats, complex exceptions, and nuanced policy prose need additional parsing and tests. The regex examples are not a general document-understanding engine; the rules cannot establish policy eligibility or remaining allowance from absent claims history.
-
-The tests use real Chroma with test-only provider mocks and controlled HTTPX Ollama doubles. Real llama3.2:3b/nomic-embed-text inference has also been checked locally. Removing the runnable offline demonstration is a departure from the original assessment's offline-double requirement. This implementation was created with AI assistance.
-
-References: [Chroma metadata filtering](https://docs.trychroma.com/docs/querying-collections/metadata-filtering), [Ollama embeddings](https://docs.ollama.com/api/embed), and [Ollama structured outputs](https://docs.ollama.com/capabilities/structured-outputs).
+Specifying `tests` avoids collecting old test files in the backups folder.
 
 
 # Git code commit steps
