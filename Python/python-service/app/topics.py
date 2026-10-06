@@ -25,16 +25,22 @@ def mentions(text):
             for match in re.finditer(pattern, text, re.I):
                 matches.append(match.group())
             if matches:
-                found[topic] = list(dict.fromkeys(matches))
+                unique_matches = []
+                for matched_text in matches:
+                    if matched_text not in unique_matches:
+                        unique_matches.append(matched_text)
+                found[topic] = unique_matches
                 break
     return found
 
 
 def is_evidence(text):
+    """Exclude text matching the known instruction-like phrases above."""
     return INJECTION.search(text) is None
 
 
 def unsupported_scope(question, passages):
+    """Check whether the question asks for information outside these policies."""
     qualifiers = ("hotel", "hotels", "flight", "flights", "meals", "taxi", "taxis",
                   "remaining balance", "remaining entitlement", "already claimed")
     lower = question.lower()

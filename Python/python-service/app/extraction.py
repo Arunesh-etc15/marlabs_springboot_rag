@@ -62,7 +62,8 @@ def extract(text):
     benefits = mentions(text)
     benefit = None
     if len(benefits) == 1:
-        benefit = list(benefits)[0]
+        benefit_names = list(benefits.keys())
+        benefit = benefit_names[0]
     if benefit:
         evidence["benefit"] = benefits[benefit]
     else:
@@ -75,39 +76,51 @@ def extract(text):
         amounts.add(Decimal(number))
 
     currency_matches = list(CURRENCY.finditer(text))
-    currencies = {match.group(1).upper() for match in currency_matches}
+    currencies = set()
+    for match in currency_matches:
+        currency_name = match.group(1).upper()
+        currencies.add(currency_name)
     amount = None
     if len(amounts) == 1:
-        amount = float(list(amounts)[0])
+        unique_amounts = list(amounts)
+        amount = float(unique_amounts[0])
     if amount is not None and not math.isfinite(amount):
         amount = None
         issues.append("Stated amount exceeds the supported numeric range.")
     if amount is not None:
         evidence["amount"] = matching_quotes(money_matches)
     elif amounts:
-        issues.append("Conflicting stated amounts: " + ", ".join(str(a) for a in sorted(amounts)) + ".")
+        amount_labels = []
+        for value in sorted(amounts):
+            amount_labels.append(str(value))
+        issues.append("Conflicting stated amounts: " + ", ".join(amount_labels) + ".")
     else:
         issues.append("Requested amount is missing.")
     # Currency is independent: an ambiguous amount can still have a known currency.
     currency = None
     if len(currencies) == 1:
-        currency = list(currencies)[0]
+        unique_currencies = list(currencies)
+        currency = unique_currencies[0]
     if currency:
         evidence["currency"] = matching_quotes(currency_matches)
     else:
         issues.append("Currency is missing or ambiguous.")
     reference_matches = list(REFERENCE.finditer(text))
-    references = {match.group(1) for match in reference_matches}
+    references = set()
+    for match in reference_matches:
+        references.add(match.group(1))
     reference = None
     if len(references) == 1:
-        reference = list(references)[0]
+        unique_references = list(references)
+        reference = unique_references[0]
     if reference:
         evidence["reference"] = matching_quotes(reference_matches)
     else:
         issues.append("Reference is missing or ambiguous.")
     for quotes in evidence.values():
-        if any(quote not in text for quote in quotes):
-            raise ServiceError("EXTRACTION_ERROR", "Extracted evidence could not be verified.")
+        for quote in quotes:
+            if quote not in text:
+                raise ServiceError("EXTRACTION_ERROR", "Extracted evidence could not be verified.")
     extracted = Extracted(
         benefit=benefit,
         amount=amount,

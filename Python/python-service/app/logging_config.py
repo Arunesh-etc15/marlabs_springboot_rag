@@ -13,7 +13,9 @@ LOGGER_NAMES = ("policy_service", "uvicorn.error")
 def configure_logging(path=None):
     """Attach one shared file handler, without duplicating handlers on reload."""
     log_path = Path(path or ROOT / "service.log").resolve()
-    loggers = [logging.getLogger(name) for name in LOGGER_NAMES]
+    loggers = []
+    for name in LOGGER_NAMES:
+        loggers.append(logging.getLogger(name))
     owned_handlers = set()
     for logger in loggers:
         for handler in logger.handlers:

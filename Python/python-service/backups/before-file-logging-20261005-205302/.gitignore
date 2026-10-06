@@ -1,6 +1,0 @@
-.venv/
-.venv-copied/
-__pycache__/
-.pytest_cache/
-.chroma/
-.env

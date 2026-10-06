@@ -42,24 +42,40 @@ def parse_policy_text(text):
 
     policies_by_id = {}
     for position, header in enumerate(headers):
-        end = headers[position + 1].start() if position + 1 < len(headers) else len(text)
+        # Each record ends where the next numbered record starts.
+        if position + 1 < len(headers):
+            next_header = headers[position + 1]
+            end = next_header.start()
+        else:
+            end = len(text)
         block = text[header.end():end].strip()
         lines = block.splitlines()
-        metadata = METADATA.fullmatch(lines[0].strip()) if lines else None
+        metadata = None
+        if lines:
+            metadata_line = lines[0].strip()
+            metadata = METADATA.fullmatch(metadata_line)
         if metadata is None:
             raise ValueError(f"Missing or invalid policy metadata for {header.group(1)}.")
         if not metadata.group(1).strip() or not metadata.group(2).strip():
             raise ValueError("Policy tenant and role cannot be blank.")
 
         # PDF line/page wrapping is formatting, not part of the logical quotation.
-        policy_text = " ".join(" ".join(lines[1:]).split())
+        text_lines = lines[1:]
+        joined_text = " ".join(text_lines)
+        policy_text = " ".join(joined_text.split())
+        policy_id = header.group(1)
+        tenant = metadata.group(1).strip()
+        role = metadata.group(2).strip()
+        approval_state = metadata.group(3)
+        effective_from = metadata.group(4)
+        effective_to = metadata.group(5)
         policy = Policy(
-            id=header.group(1),
-            tenant=metadata.group(1).strip(),
-            role=metadata.group(2).strip(),
-            approval_state=metadata.group(3),
-            effective_from=metadata.group(4),
-            effective_to=metadata.group(5),
+            id=policy_id,
+            tenant=tenant,
+            role=role,
+            approval_state=approval_state,
+            effective_from=effective_from,
+            effective_to=effective_to,
             text=policy_text,
         )
         if policy.id in policies_by_id and policies_by_id[policy.id] != policy:

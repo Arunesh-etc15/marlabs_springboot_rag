@@ -19,13 +19,24 @@ log = logging.getLogger("policy_service")
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 
 
+def build_policy_service(settings, provider):
+    """Read the PDF, open Chroma, and connect them to the business service."""
+    policies = load_policies(settings.policy_file)
+    log.info("Loaded %s policy records from %s", len(policies), settings.policy_file)
+    store = PolicyStore(policies, provider, path=settings.chroma_path)
+    return PolicyService(store, provider)
+
+
 def create_app(settings=None, service=None):
-    settings = settings or Settings.from_env()
+    if not settings:
+        settings = Settings.from_env()
     caller_json = settings.callers_file.read_text(encoding="utf-8")
     callers = json.loads(caller_json)
     identities = set()
     for caller in callers.values():
-        identities.add((caller["tenant"], caller["role"]))
+        tenant = caller["tenant"]
+        role = caller["role"]
+        identities.add((tenant, role))
 
     @asynccontextmanager
     async def lifespan(app):
@@ -37,13 +48,11 @@ def create_app(settings=None, service=None):
                 provider = OllamaProvider(settings)
 
                 # Read the policy PDF now; embeddings are built on the first search.
-                policies = load_policies(settings.policy_file)
-                log.info("Loaded %s policy records from %s", len(policies), settings.policy_file)
-                store = PolicyStore(policies, provider, path=settings.chroma_path)
-                app.state.service = PolicyService(store, provider)
+                app.state.service = build_policy_service(settings, provider)
             else:
                 app.state.service = service
             log.info("Service ready; model=%s embedding_model=%s", settings.model, settings.embedding_model)
+            # FastAPI serves requests while this function is paused at yield.
             yield
         except Exception:
             log.exception("Service lifecycle failed")
@@ -79,7 +88,8 @@ def create_app(settings=None, service=None):
         )
 
     def validate_context(context):
-        if (context.tenant, context.role) not in identities:
+        caller_identity = (context.tenant, context.role)
+        if caller_identity not in identities:
             raise ServiceError("INVALID_CONTEXT", "Unknown tenant and role context.", 400)
 
     # @app.get("/health")
@@ -94,7 +104,10 @@ def create_app(settings=None, service=None):
     @app.post("/internal/answer", response_model=Answer)
     def answer(request: Question):
         validate_context(request)
-        return app.state.service.answer(request, request.question)
+        policy_service = app.state.service
+        question_text = request.question
+        result = policy_service.answer(request, question_text)
+        return result
 
     @app.post("/internal/documents/analyze", response_model=Analysis)
     def analyze(
@@ -111,7 +124,8 @@ def create_app(settings=None, service=None):
             raise ServiceError("INVALID_REQUEST", "Batch and document IDs are required.", 400)
         try:
             content = file.file.read(MAX_UPLOAD_BYTES + 1)
-            result = app.state.service.analyze(context, file.filename or "", content)
+            filename = file.filename or ""
+            result = app.state.service.analyze(context, filename, content)
             log.info("batch=%r document=%r status=completed", batch_id, document_id)
             return result
         except ServiceError as exc:
